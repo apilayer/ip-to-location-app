@@ -1,101 +1,238 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { getGeolocation } from "./actions";
+import { GeolocationResult } from "./types";
+import { MapPin, AlertTriangle, Globe, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [results, setResults] = useState<GeolocationResult[] | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        setResults(null);
+        setExpandedIndex(null);
+
+        const formData = new FormData(event.currentTarget);
+        const result = await getGeolocation(formData);
+
+        if ("error" in result) {
+            setError(result.error);
+        } else {
+            setResults(result.results);
+        }
+
+        setIsLoading(false);
+    };
+
+    const isSuspicious = (countryName: string) => {
+        const suspiciousCountries = ["North Korea", "Iran", "Syria"];
+        console.log(suspiciousCountries.includes(countryName || ""));
+        return suspiciousCountries.includes(countryName || "");
+    };
+
+    const toggleExpand = (index: number) => {
+        setExpandedIndex(expandedIndex === index ? null : index);
+    };
+
+    return (
+        <div className="min-h-screen bg-[#1a1b1e] p-4 md:p-8">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex items-center justify-center mb-8">
+                    <Globe className="w-8 h-8 text-purple-400 mr-2" />
+                    <h1 className="text-3xl font-bold text-gray-200">IP to Location</h1>
+                </div>
+
+                <Card className="bg-[#25262b] border-none shadow-lg rounded-xl overflow-hidden backdrop-blur-sm">
+                    <CardHeader className="border-b border-gray-800">
+                        <CardTitle className="text-2xl font-bold text-gray-200">IP Geolocation Explorer</CardTitle>
+                        <CardDescription className="text-gray-400">
+                            Enter IP addresses to explore their locations.
+                            <span className="block">
+                                Check if an IP is suspicious and get access to a lot more details.
+                            </span>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <Textarea
+                                name="ips"
+                                className="min-h-[200px] bg-[#1a1b1e] border-gray-800 text-gray-200 placeholder-gray-500 resize-none rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Enter IP addresses (one per line)"
+                            />
+                            <Button
+                                type="submit"
+                                className="w-full bg-purple-500 hover:bg-purple-600 text-white transition-colors"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Globe className="mr-2 h-4 w-4" />
+                                )}
+                                {isLoading ? "Exploring..." : "Explore Geolocation"}
+                            </Button>
+                        </form>
+
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400"
+                                >
+                                    {error}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <AnimatePresence>
+                            {results && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="grid grid-cols-1 gap-4"
+                                >
+                                    {results.map((result, index) => (
+                                        <motion.div
+                                            key={index}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                        >
+                                            <Card
+                                                className={`bg-opacity-20 border-none shadow-lg cursor-pointer transition-all duration-300 ${
+                                                    isSuspicious(result.country_name)
+                                                        ? "bg-orange-500"
+                                                        : "bg-purple-500"
+                                                } ${expandedIndex === index ? "ring-2 ring-blue-500" : ""}`}
+                                                onClick={() => toggleExpand(index)}
+                                            >
+                                                <CardHeader className="pb-2">
+                                                    <CardTitle className="text-lg font-medium text-gray-200 flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="w-4 h-4" />
+                                                            {result.ip}
+                                                        </div>
+                                                        {expandedIndex === index ? (
+                                                            <ChevronUp className="w-4 h-4" />
+                                                        ) : (
+                                                            <ChevronDown className="w-4 h-4" />
+                                                        )}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="space-y-2">
+                                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                                        <div>
+                                                            <p className="text-gray-400">Country</p>
+                                                            <p className="font-medium text-gray-200">
+                                                                {result.country_name}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-400">Region</p>
+                                                            <p className="font-medium text-gray-200">
+                                                                {result.region_name}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-400">City</p>
+                                                            <p className="font-medium text-gray-200">{result.city}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-400">Coordinates</p>
+                                                            <p className="font-medium text-gray-200">
+                                                                {result.latitude}, {result.longitude}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    {isSuspicious(result.country_name) && (
+                                                        <div className="flex items-center gap-2 text-orange-300 text-sm">
+                                                            <AlertTriangle className="w-4 h-4" />
+                                                            <span>Suspicious IP detected</span>
+                                                        </div>
+                                                    )}
+                                                    {expandedIndex === index && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: "auto" }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            transition={{ duration: 0.3 }}
+                                                            className="mt-4 space-y-4"
+                                                        >
+                                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                                <div>
+                                                                    <p className="text-gray-400">Continent</p>
+                                                                    <p className="font-medium text-gray-200">
+                                                                        {result.continent_name}
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-gray-400">ZIP</p>
+                                                                    <p className="font-medium text-gray-200">
+                                                                        {result.zip || "N/A"}
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-gray-400">Connection Type</p>
+                                                                    <p className="font-medium text-gray-200">
+                                                                        {result.connection_type || "N/A"}
+                                                                    </p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-gray-400">ISP</p>
+                                                                    <p className="font-medium text-gray-200">
+                                                                        {result.connection.isp || "N/A"}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <p className="text-gray-400">Security Information</p>
+                                                                <ul className="list-disc list-inside text-sm text-gray-200 space-y-1">
+                                                                    <li>
+                                                                        Proxy: {result.security.is_proxy ? "Yes" : "No"}
+                                                                    </li>
+                                                                    <li>
+                                                                        Crawler:{" "}
+                                                                        {result.security.is_crawler ? "Yes" : "No"}
+                                                                    </li>
+                                                                    <li>
+                                                                        Tor: {result.security.is_tor ? "Yes" : "No"}
+                                                                    </li>
+                                                                    <li>
+                                                                        Threat Level: {result.security.threat_level}
+                                                                    </li>
+                                                                    {result.security.threat_types && (
+                                                                        <li>
+                                                                            Threat Types:{" "}
+                                                                            {result.security.threat_types.join(", ")}
+                                                                        </li>
+                                                                    )}
+                                                                </ul>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }

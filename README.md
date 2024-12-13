@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IP to Location
 
-## Getting Started
+![IP to Location App Screenshot](/ip-to-location.png)
 
-First, run the development server:
+A web application that displays address of given ip addresses. This app also detects whether a particular IP address is suspicious.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Built with Next.js and [IPstack API](https://ipstack.com/).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+-   📍 Display the location of given IP addresses
+-   📰 Check if a particular IP address is suspicious or not
+-   🌐 Fetch location of multiple IP addresses with single API call
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installation
 
-## Learn More
+To set up the IP to Location App project locally, follow these steps:
 
-To learn more about Next.js, take a look at the following resources:
+1. Clone the repository:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    ```
+    git clone https://github.com/apilayer/ip-to-location-app.git
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Navigate to the project directory:
 
-## Deploy on Vercel
+    ```
+    cd ip-to-location-app
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Install the dependencies:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    ```
+    npm install
+    ```
+
+4. Create a `.env.local` file in the root directory and add your API keys:
+
+    ```
+    IPSTACK_API_KEY=your_ipstack_api_key_here
+    ```
+
+5. Run the development server:
+
+    ```
+    npm run dev
+    ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+
+## Usage
+
+1. App will show the locations of provided IP addresses
+2. Select a particular location block and see full address
+3. Check Proxy, Crawler, Tor, Threat Level, and other important details
+
+## Technologies Used
+
+-   [Next.js](https://nextjs.org/)
+-   [IPstack API](https://ipstack.com/) to convert IP addresses to location
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Support
+
+If you encounter any issues or have questions, please file an issue on the GitHub repository.
