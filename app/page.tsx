@@ -1,5 +1,7 @@
 "use client";
 
+import { FAQ } from "./components/faq";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +11,29 @@ import { getGeolocation } from "./actions";
 import { GeolocationResult } from "./types";
 import { MapPin, AlertTriangle, Globe, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
+const faqItems = [
+    {
+        id: "1",
+        number: "01",
+        title: "What API has used in this project?",
+        content:
+            "This project is built on top of IPStack API (https://ipstack.com) offered by APILayer. IPstack API converts any IP address to geolocation and provides more information such as secuity and availability.",
+    },
+    {
+        id: "2",
+        number: "02",
+        title: "Is this free to use?",
+        content:
+            "Yes, IP to Location app is completely free to use as well as IPStack API. You can subscribe to IPStack paid plans we you want more functionalities.",
+    },
+    {
+        id: "3",
+        number: "03",
+        title: "Can I get locations of multiple IP addresses at once?",
+        content:
+            "Yes, you can. This app calls the Bulk endpoint of IPStack that enables the application to get the geolocation of multiple IP addresses at once.",
+    },
+];
 export default function Home() {
     const [results, setResults] = useState<GeolocationResult[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -231,6 +256,7 @@ export default function Home() {
                             )}
                         </AnimatePresence>
                     </CardContent>
+                    <FAQ items={faqItems} />
                 </Card>
             </div>
         </div>
