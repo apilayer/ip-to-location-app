@@ -49,6 +49,35 @@ export async function getGeolocation(
     if (ipList.length > 50) {
         return { error: "Maximum 50 IP addresses allowed at once" };
     }
+
+    try {
+        const response = await fetch(`http://api.ipstack.com/${ipList.join(",")}?access_key=${API_KEY}&security=1`);
+
+        if (!response.ok) {
+            throw new Error(`API responded with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if ("success" in data && data.success === false) {
+            return { error: data.error.info || "An error occurred while fetching data" };
+        }
+
+        let results: GeolocationResult[];
+
+        if (Array.isArray(data)) {
+            results = data.map(processGeolocationData).filter((item): item is GeolocationResult => item !== null);
+        } else if (typeof data === "object" && data !== null) {
+            results = [processGeolocationData(data)].filter((item): item is GeolocationResult => item !== null);
+        } else {
+            throw new Error("Unexpected API response format");
+        }
+
+        return { results };
+    } catch (error) {
+        console.error("API call error:", error);
+        return { error: "Failed to fetch geolocation data. Please try again later." };
+    }
 }
 
 function processGeolocationData(item: unknown): GeolocationResult | null {
